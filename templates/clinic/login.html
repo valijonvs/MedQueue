@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Shifokor kabinetiga kirish - MedQueue{% endblock %}
+
+{% block content %}
+    <div class="login-blok">
+        <form method="post" class="karta forma">
+            {% csrf_token %}
+            <h1 class="sahifa-sarlavha" style="font-size: 22px;">Shifokor kabinetiga kirish</h1>
+            <p class="sahifa-subtitr">Login va parolingizni admin bergan bo'lishi kerak.</p>
+
+            {% if form.non_field_errors %}
+                <div class="xabar xabar-error">{{ form.non_field_errors|striptags }}</div>
+            {% endif %}
+
+            <div class="forma-qatori">
+                <label for="{{ form.username.id_for_label }}">Login</label>
+                {{ form.username }}
+            </div>
+
+            <div class="forma-qatori">
+                <label for="{{ form.password.id_for_label }}">Parol</label>
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="tugma tugma-asosiy" style="width: 100%;">Kirish</button>
+        </form>
+    </div>
+
+    <style>
+        .login-blok {
+            display: flex;
+            justify-content: center;
+            padding-top: 24px;
+        }
+
+        .login-blok .forma { width: 100%; max-width: 380px; }
+    </style>
+{% endblock %}

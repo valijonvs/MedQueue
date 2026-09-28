@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Navbatga yozilish - MedQueue{% endblock %}
+
+{% block content %}
+    <div class="booking-layout">
+        <div class="booking-copy">
+            <span class="eyebrow booking-eyebrow">Booking</span>
+            <h1 class="sahifa-sarlavha">Navbatga yozilishi uchun ma'lumotlarni to'ldiring</h1>
+            <p class="sahifa-subtitr">Ismingiz, telefon va kelish vaqtini tanlang. Shifokor tanlashdan keyin talon raqami avtomatik yaratiladi.</p>
+
+            <div class="booking-points">
+                <div class="info-badge">
+                    <span>01</span>
+                    <div>
+                        <strong>Shifokorni tanlang</strong>
+                        <small>Mutaxassisligingizga mos doktor</small>
+                    </div>
+                </div>
+                <div class="info-badge">
+                    <span>02</span>
+                    <div>
+                        <strong>Kelish vaqtini belgilang</strong>
+                        <small>Navbatni o'zingizga qulay vaqtga olasiz</small>
+                    </div>
+                </div>
+                <div class="info-badge">
+                    <span>03</span>
+                    <div>
+                        <strong>Talon raqami</strong>
+                        <small>Resepshen tomonidan avtomatik beriladi</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-panel karta">
+            {% if messages %}
+                {% for xabar in messages %}
+                    <div class="xabar xabar-{{ xabar.tags }}">{{ xabar }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% for maydon in form %}
+                    <div class="forma-qatori">
+                        <label for="{{ maydon.id_for_label }}">{{ maydon.label }}</label>
+                        {{ maydon }}
+                        {% if maydon.errors %}
+                            <p class="xato-matni">{{ maydon.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="tugma tugma-asosiy button-block">Navbatga yozilish</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .booking-layout {
+            display: grid;
+            grid-template-columns: 1fr 0.95fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .booking-copy {
+            padding: 8px 8px 8px 0;
+        }
+
+        .booking-eyebrow {
+            margin-bottom: 16px;
+        }
+
+        .booking-points {
+            display: grid;
+            gap: 14px;
+            margin-top: 26px;
+        }
+
+        .info-badge {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: var(--soya-kichik);
+        }
+
+        .info-badge span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #dbeafe, #bae6fd);
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .info-badge strong,
+        .info-badge small {
+            display: block;
+        }
+
+        .info-badge small {
+            color: var(--kulrang);
+        }
+
+        .booking-panel {
+            padding: 24px;
+        }
+
+        .button-block {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 860px) {
+            .booking-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}

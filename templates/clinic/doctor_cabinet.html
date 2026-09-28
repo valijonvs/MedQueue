@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Mening kabinetim - MedQueue{% endblock %}
+
+{% block content %}
+    {% if messages %}
+        {% for xabar in messages %}
+            <div class="xabar xabar-{{ xabar.tags }}">{{ xabar }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if doctor %}
+        <div class="shifokor-sarlavha karta">
+            <span class="avatar avatar-katta">{{ doctor.first_name|first }}{{ doctor.last_name|first }}</span>
+            <div>
+                <h1>Xush kelibsiz, {{ doctor.last_name }} {{ doctor.first_name }}</h1>
+                <p class="sahifa-subtitr" style="margin-bottom: 0;">
+                    {{ doctor.get_specialty_display }} &middot; {{ doctor.room_number }}-xona &middot; {{ doctor.phone_number }}
+                </p>
+            </div>
+        </div>
+
+        <div class="statistika-qatori">
+            <div class="stat-karta">
+                <span class="stat-son">{{ statistika.jami }}</span>
+                <span class="stat-yorliq">Jami bemorlar</span>
+            </div>
+            <div class="stat-karta stat-kutilmoqda">
+                <span class="stat-son">{{ statistika.kutilmoqda }}</span>
+                <span class="stat-yorliq">Kutilmoqda</span>
+            </div>
+            <div class="stat-karta stat-qabulda">
+                <span class="stat-son">{{ statistika.qabulda }}</span>
+                <span class="stat-yorliq">Qabulda</span>
+            </div>
+            <div class="stat-karta stat-yakunlandi">
+                <span class="stat-son">{{ statistika.yakunlandi }}</span>
+                <span class="stat-yorliq">Yakunlandi</span>
+            </div>
+        </div>
+
+        <h2 class="bolim-sarlavha">Navbat jadvali</h2>
+
+        {% if appointments %}
+            <div class="jadval-oynasi">
+                <table class="jadval">
+                    <thead>
+                        <tr>
+                            <th>Talon</th>
+                            <th>Bemor</th>
+                            <th>Telefon</th>
+                            <th>Kelish vaqti</th>
+                            <th>Holati</th>
+                            <th>Amal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for yozuv in appointments %}
+                            <tr>
+                                <td><strong>{{ yozuv.ticket_number }}</strong></td>
+                                <td>{{ yozuv.patient_name }}</td>
+                                <td>{{ yozuv.phone_number }}</td>
+                                <td>{{ yozuv.appointment_time|date:"d.m.Y H:i" }}</td>
+                                <td><span class="holat holat-{{ yozuv.status }}">{{ yozuv.get_status_display }}</span></td>
+                                <td>
+                                    <div class="amallar-qatori">
+                                        {% if yozuv.status != "yakunlandi" %}
+                                            <form method="post" action="{% url 'doctor_advance_status' yozuv.pk %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="tugma tugma-asosiy tugma-kichik">Keyingi status →</button>
+                                            </form>
+                                        {% else %}
+                                            <span style="color: var(--kulrang);">&mdash;</span>
+                                        {% endif %}
+
+                                        <form method="post" action="{% url 'doctor_cancel_appointment' yozuv.pk %}" onsubmit="return confirm('Ushbu bemor yozuvini o\'chirishga ishonchingiz komilmi?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="tugma tugma-xavfli tugma-kichik">Bekor qilish</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="karta bosh-holat">
+                <p>Bugun sizga hali bemor yozilmagan.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="karta bosh-holat">
+            <p>Profil topilmadi.</p>
+        </div>
+    {% endif %}
+
+    <style>
+        .shifokor-sarlavha { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .avatar-katta { width: 56px; height: 56px; font-size: 18px; border-radius: 50%; background-color: var(--asosiy-och); color: var(--asosiy-qorongi); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .shifokor-sarlavha h1 { font-size: 21px; }
+
+        .statistika-qatori { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 32px; }
+
+        .stat-karta {
+            background-color: var(--oq);
+            border: 1px solid var(--chegara);
+            border-radius: var(--radius);
+            box-shadow: var(--soya-kichik);
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-karta .stat-son { display: block; font-size: 26px; font-weight: 800; }
+        .stat-karta .stat-yorliq { display: block; font-size: 12.5px; color: var(--kulrang); margin-top: 4px; }
+
+        .stat-kutilmoqda .stat-son { color: #92400e; }
+        .stat-qabulda .stat-son { color: #1e40af; }
+        .stat-yakunlandi .stat-son { color: #065f46; }
+
+        .filtr-forma {
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,255,0.96));
+        }
+
+        .amallar-qatori {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tugma-xavfli {
+            background-color: var(--oq);
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .tugma-xavfli:hover { background-color: #fee2e2; }
+
+        .bolim-sarlavha { font-size: 17px; margin-bottom: 14px; }
+    </style>
+{% endblock %}

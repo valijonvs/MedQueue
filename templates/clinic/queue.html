@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Navbatlar ro'yxati - MedQueue{% endblock %}
+
+{% block content %}
+    <h1 class="sahifa-sarlavha">Bugungi navbatlar ro'yxati</h1>
+    <p class="sahifa-subtitr">Barcha shifokorlar bo'yicha bugungi yozuvlar. Qidiring, filtrlang va holatlarni yangilang.</p>
+
+    {% if messages %}
+        {% for xabar in messages %}
+            <div class="xabar xabar-{{ xabar.tags }}">{{ xabar }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="statistika-qatori">
+        <div class="stat-karta">
+            <span class="stat-son">{{ statistika.jami }}</span>
+            <span class="stat-yorliq">Jami bugun</span>
+        </div>
+        <div class="stat-karta stat-kutilmoqda">
+            <span class="stat-son">{{ statistika.kutilmoqda }}</span>
+            <span class="stat-yorliq">Kutilmoqda</span>
+        </div>
+        <div class="stat-karta stat-qabulda">
+            <span class="stat-son">{{ statistika.qabulda }}</span>
+            <span class="stat-yorliq">Qabulda</span>
+        </div>
+        <div class="stat-karta stat-yakunlandi">
+            <span class="stat-son">{{ statistika.yakunlandi }}</span>
+            <span class="stat-yorliq">Yakunlandi</span>
+        </div>
+    </div>
+
+    <form method="get" class="karta filtr-forma">
+        <div class="filtr-qatori">
+            <input type="text" name="q" value="{{ qidiruv }}" placeholder="Ism yoki telefon bo'yicha qidirish...">
+
+            <select name="doctor">
+                <option value="">Barcha shifokorlar</option>
+                {% for shifokor in doctors %}
+                    <option value="{{ shifokor.pk }}" {% if tanlangan_shifokor == shifokor.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ shifokor }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="status">
+                <option value="">Barcha holatlar</option>
+                <option value="kutilmoqda" {% if tanlangan_holat == "kutilmoqda" %}selected{% endif %}>Kutilmoqda</option>
+                <option value="qabulda" {% if tanlangan_holat == "qabulda" %}selected{% endif %}>Qabulda</option>
+                <option value="yakunlandi" {% if tanlangan_holat == "yakunlandi" %}selected{% endif %}>Yakunlandi</option>
+            </select>
+
+            <button type="submit" class="tugma tugma-asosiy">Ko'rish</button>
+
+            {% if qidiruv or tanlangan_shifokor or tanlangan_holat %}
+                <a href="{% url 'queue' %}" class="tugma tugma-ikkinchi">Tozalash</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if appointments %}
+        <div class="jadval-oynasi">
+            <table class="jadval">
+                <thead>
+                    <tr>
+                        <th>Talon</th>
+                        <th>Bemor</th>
+                        <th>Telefon</th>
+                        <th>Shifokor</th>
+                        <th>Vaqti</th>
+                        <th>Holati</th>
+                        <th>Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for yozuv in appointments %}
+                        <tr>
+                            <td><strong>{{ yozuv.ticket_number }}</strong></td>
+                            <td>{{ yozuv.patient_name }}</td>
+                            <td>{{ yozuv.phone_number }}</td>
+                            <td>{{ yozuv.doctor }}</td>
+                            <td>{{ yozuv.appointment_time|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <span class="holat holat-{{ yozuv.status }}">{{ yozuv.get_status_display }}</span>
+                            </td>
+                            <td>
+                                <div class="amallar-qatori">
+                                    {% if yozuv.status != "yakunlandi" %}
+                                        <form method="post" action="{% url 'advance_status' yozuv.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="tugma tugma-asosiy tugma-kichik">Keyingi →</button>
+                                        </form>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'cancel_appointment' yozuv.pk %}" onsubmit="return confirm('Yozuvni bekor qilishga ishonchingiz komilmi?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="tugma tugma-xavfli tugma-kichik">Bekor qilish</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="karta bosh-holat">
+            <p>Ushbu filtrga mos yozuvlar topilmadi.</p>
+        </div>
+    {% endif %}
+
+    <style>
+        .statistika-qatori { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+
+        .stat-karta {
+            background-color: var(--oq);
+            border: 1px solid var(--chegara);
+            border-radius: var(--radius);
+            box-shadow: var(--soya-kichik);
+            padding: 18px;
+            text-align: center;
+        }
+
+        .stat-karta .stat-son { display: block; font-size: 26px; font-weight: 800; }
+        .stat-karta .stat-yorliq { display: block; font-size: 12.5px; color: var(--kulrang); margin-top: 4px; }
+        .stat-kutilmoqda .stat-son { color: #92400e; }
+        .stat-qabulda .stat-son { color: #1e40af; }
+        .stat-yakunlandi .stat-son { color: #065f46; }
+
+        .filtr-forma {
+            padding: 16px 18px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.66);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            border-radius: 26px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+        }
+
+        html[data-theme="dark"] .filtr-forma {
+            background: rgba(15, 23, 35, 0.9);
+            border-color: rgba(148, 163, 184, 0.2);
+            box-shadow: 0 12px 28px rgba(3, 7, 18, 0.22);
+        }
+
+        html[data-theme="dark"] .filtr-forma .tugma-ikkinchi,
+        html[data-theme="dark"] .filtr-forma .tugma-asosiy {
+            box-shadow: none;
+        }
+
+        .filtr-qatori {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filtr-qatori input,
+        .filtr-qatori select {
+            height: 54px;
+            padding: 0 16px;
+            border: 1.5px solid rgba(148, 163, 184, 0.45);
+            border-radius: 14px;
+            font-size: 15px;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--matn);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.2s ease;
+        }
+
+        html[data-theme="dark"] .filtr-qatori input,
+        html[data-theme="dark"] .filtr-qatori select {
+            background: rgba(14, 23, 40, 0.9);
+            border-color: rgba(148, 163, 184, 0.28);
+            color: #e5edf9;
+            box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.08);
+        }
+
+        .filtr-qatori input {
+            flex: 1 1 280px;
+            min-width: 220px;
+            border-color: rgba(148, 163, 184, 0.5);
+            background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(246,249,252,0.92));
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .filtr-qatori input::placeholder {
+            color: #6b7280;
+            opacity: 1;
+        }
+
+        html[data-theme="dark"] .filtr-qatori input::placeholder {
+            color: #9fb3cc;
+        }
+
+        .filtr-qatori input:focus,
+        .filtr-qatori select:focus {
+            outline: none;
+            border-color: rgba(39, 125, 255, 0.85);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08), inset 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .filtr-qatori select {
+            min-width: 210px;
+            flex: 0 1 210px;
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, #374151 50%), linear-gradient(135deg, #374151 50%, transparent 50%);
+            background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+            background-size: 6px 6px, 6px 6px;
+            background-repeat: no-repeat;
+            padding-right: 34px;
+        }
+
+        html[data-theme="dark"] .filtr-qatori select {
+            background-image: linear-gradient(45deg, transparent 50%, #dbeafe 50%), linear-gradient(135deg, #dbeafe 50%, transparent 50%);
+        }
+
+        .filtr-qatori .tugma,
+        .filtr-qatori .tugma-ikkinchi {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 54px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 0 22px;
+        }
+
+        .filtr-qatori .tugma-asosiy {
+            min-width: 120px;
+            background: linear-gradient(135deg, #2f9bf7 0%, #1f82e5 100%);
+            border: none;
+            color: #fff;
+            box-shadow: 0 10px 18px rgba(31, 130, 229, 0.28);
+        }
+
+        .filtr-qatori .tugma-ikkinchi {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(148, 163, 184, 0.42);
+            color: var(--matn);
+        }
+
+        html[data-theme="dark"] .filtr-qatori .tugma-ikkinchi {
+            background: rgba(16, 24, 38, 0.9);
+            border-color: rgba(148, 163, 184, 0.28);
+            color: #e5edf9;
+        }
+
+        .amallar-qatori { display: flex; gap: 8px; }
+
+        .tugma-xavfli {
+            background-color: var(--oq);
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .tugma-xavfli:hover { background-color: #fee2e2; }
+    </style>
+{% endblock %}

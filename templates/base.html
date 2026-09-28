@@ -1,0 +1,478 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MedQueue - Klinika{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Barcha stillar shu faylda, alohida CSS fayl kerak emas -->
+    <style>
+        /* ===== Umumiy sozlamalar ===== */
+        :root {
+            --asosiy: #0ea5e9;
+            --asosiy-qorongi: #0f172a;
+            --asosiy-och: #e0f2fe;
+            --asosiy-halqa: rgba(14, 165, 233, 0.17);
+            --matn: #0f172a;
+            --kulrang: #64748b;
+            --fon: #edf5ff;
+            --oq: #ffffff;
+            --chegara: rgba(148, 163, 184, 0.25);
+            --radius: 22px;
+            --radius-kichik: 12px;
+            --soya: 0 20px 40px rgba(15, 23, 42, 0.08);
+            --soya-kichik: 0 10px 24px rgba(15, 23, 42, 0.06);
+            --qora: #071627;
+            --yashil: #14b8a6;
+            --input-bg: #f8fbff;
+            --panel-alt: #fafbfc;
+            --nav-bg: rgba(7, 22, 39, 0.95);
+            --nav-text: rgba(226, 232, 240, 0.9);
+            --form-weak: rgba(148, 163, 184, 0.4);
+        }
+
+        html[data-theme="dark"] {
+            --matn: #e5edf9;
+            --kulrang: #9bb0cc;
+            --fon: #09131f;
+            --oq: #111c2d;
+            --chegara: rgba(148, 163, 184, 0.18);
+            --soya: 0 20px 40px rgba(2, 6, 23, 0.45);
+            --soya-kichik: 0 10px 24px rgba(2, 6, 23, 0.38);
+            --input-bg: #0e1728;
+            --panel-alt: #0f1d31;
+            --nav-bg: rgba(6, 14, 25, 0.92);
+            --nav-text: rgba(226, 232, 240, 0.88);
+            --form-weak: rgba(148, 163, 184, 0.32);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), transparent 25%),
+                linear-gradient(180deg, var(--fon) 0%, color-mix(in srgb, var(--fon) 82%, #dfeafc 18%) 100%);
+            color: var(--matn);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        h1, h2, h3 { font-weight: 700; letter-spacing: -0.03em; }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            background: rgba(7, 22, 39, 0.95);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .navbar-ichki {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: #f8fbff;
+            text-decoration: none;
+            letter-spacing: -0.03em;
+        }
+
+        .logo span {
+            color: #7dd3fc;
+            font-weight: 600;
+        }
+
+        .nav-linklar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            margin-left: auto;
+        }
+
+        .nav-linklar a {
+            display: block;
+            padding: 9px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: rgba(226, 232, 240, 0.9);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-linklar a:hover {
+            background: rgba(148, 163, 184, 0.08);
+            color: #fff;
+        }
+
+        .nav-linklar a.aktive {
+            background: linear-gradient(135deg, var(--asosiy), #38bdf8);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.25);
+        }
+
+        .chiqish-forma { margin: 0; }
+
+        .chiqish-tugma {
+            font-family: inherit;
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            padding: 8px 14px;
+            border-radius: 999px;
+            color: rgba(226, 232, 240, 0.9);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .chiqish-tugma:hover { background: rgba(239, 68, 68, 0.08); color: #fecaca; }
+
+        .menyu-tugma {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #fff;
+            padding: 8px;
+        }
+
+        .kontayner {
+            max-width: 1180px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 42px 20px 32px;
+            flex: 1;
+        }
+
+        .sahifa-sarlavha {
+            font-size: 32px;
+            margin-bottom: 8px;
+            letter-spacing: -0.04em;
+        }
+
+        .sahifa-subtitr {
+            color: var(--kulrang);
+            font-size: 15px;
+            margin-bottom: 28px;
+        }
+
+        .karta {
+            background-color: var(--oq);
+            border: 1px solid var(--chegara);
+            border-radius: var(--radius);
+            box-shadow: var(--soya);
+            padding: 28px;
+        }
+
+        .xabar {
+            padding: 12px 16px;
+            border-radius: var(--radius-kichik);
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .xabar-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .xabar-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .xabar-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .tugma {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 11px 22px;
+            border-radius: var(--radius-kichik);
+            border: none;
+            cursor: pointer;
+            font-size: 14.5px;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+        }
+
+        .tugma:active { transform: translateY(1px); }
+
+        .tugma-asosiy {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: var(--oq);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+        }
+
+        .tugma-asosiy:hover { background: linear-gradient(135deg, #0284c7, #1d4ed8); }
+
+        .tugma-ikkinchi {
+            background-color: var(--oq);
+            color: var(--matn);
+            border: 1px solid var(--chegara);
+        }
+
+        .tugma-ikkinchi:hover { background-color: #f8fafc; }
+
+        .tugma-kichik {
+            padding: 7px 14px;
+            font-size: 13px;
+            border-radius: 7px;
+        }
+
+        .holat {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+
+        .holat-kutilmoqda { background-color: #fef3c7; color: #92400e; }
+        .holat-qabulda { background-color: #dbeafe; color: #1e40af; }
+        .holat-yakunlandi { background-color: #d1fae5; color: #065f46; }
+
+        .jadval-oynasi {
+            overflow-x: auto;
+            background-color: var(--oq);
+            border: 1px solid var(--chegara);
+            border-radius: var(--radius);
+            box-shadow: var(--soya);
+        }
+
+        .jadval { width: 100%; border-collapse: collapse; }
+
+        .jadval th, .jadval td {
+            text-align: left;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--chegara);
+            white-space: nowrap;
+            font-size: 14.5px;
+        }
+
+        .jadval th {
+            color: var(--kulrang);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background-color: var(--panel-alt);
+        }
+
+        .jadval tr:last-child td { border-bottom: none; }
+        .jadval tbody tr:hover { background-color: var(--panel-alt); }
+
+        .forma-qatori { margin-bottom: 18px; }
+
+        .forma-qatori label {
+            display: block;
+            font-weight: 600;
+            font-size: 13.5px;
+            margin-bottom: 6px;
+        }
+
+        .forma-qatori input, .forma-qatori select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--form-weak);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            background-color: var(--input-bg);
+            color: var(--matn);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .forma-qatori input:focus, .forma-qatori select:focus {
+            outline: none;
+            border-color: rgba(14, 165, 233, 0.7);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.12);
+            background-color: var(--oq);
+        }
+
+        .xato-matni { color: #b91c1c; font-size: 13px; margin-top: 4px; }
+
+        .bosh-holat {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--kulrang);
+        }
+
+        /* ===== Footer ===== */
+.theme-toggle {
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.15s ease, background 0.2s ease;
+            margin-left: auto;
+            font-size: 14px;
+        }
+
+        /* ===== Kichik ekranlar (telefon) ===== */
+        @media (max-width: 640px) {
+            .menyu-tugma { display: block; }
+
+            .nav-linklar {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background-color: var(--oq);
+                border-bottom: 1px solid var(--chegara);
+                padding: 8px;
+                gap: 4px;
+                box-shadow: var(--soya);
+            }
+
+            /* JS "ochiq" klassini qo'shganda menyu ko'rinadi */
+            .nav-linklar.ochiq { display: flex; }
+
+            .jadval th, .jadval td { padding: 12px; }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- ===== Tepa navbar ===== -->
+    <nav class="navbar">
+        <div class="navbar-ichki">
+            <a href="/" class="logo">MedQueue <span>- Klinika</span></a>
+
+            <ul class="nav-linklar" id="navLinklar">
+                <li><a href="/navbatga-yozilish/">Navbatga yozilish</a></li>
+                <li><a href="/navbatlar/">Navbatlar ro'yxati</a></li>
+                {% if request.user.is_authenticated %}
+                    <li><a href="/kabinet/">Mening kabinetim</a></li>
+                    <li>
+                        <form method="post" action="{% url 'doctor_logout' %}" class="chiqish-forma">
+                            {% csrf_token %}
+                            <button type="submit" class="chiqish-tugma">Chiqish</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="/kabinet/kirish/">Shifokor kabineti</a></li>
+                {% endif %}
+            </ul>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">☀️</button>
+                <button class="menyu-tugma" id="menyuTugma" aria-label="Menyu">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== Asosiy kontent ===== -->
+    <main class="kontayner">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+        &copy; 2026 MedQueue - Klinika. Barcha huquqlar himoyalangan.
+    </footer>
+
+    <script>
+        const root = document.documentElement;
+        const themeToggle = document.getElementById("themeToggle");
+        const savedTheme = localStorage.getItem("theme");
+        const preferredTheme = savedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        root.setAttribute("data-theme", preferredTheme);
+
+        function updateThemeButton() {
+            if (!themeToggle) return;
+            const isDark = root.getAttribute("data-theme") === "dark";
+            themeToggle.textContent = isDark ? "☀️" : "🌙";
+            themeToggle.setAttribute("aria-label", isDark ? "Svetli rejim" : "Qorong'i rejim");
+        }
+
+        updateThemeButton();
+
+        if (themeToggle) {
+            themeToggle.addEventListener("click", function () {
+                const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+                root.setAttribute("data-theme", nextTheme);
+                localStorage.setItem("theme", nextTheme);
+                updateThemeButton();
+            });
+        }
+
+        var tugma = document.getElementById("menyuTugma");
+        var linklar = document.getElementById("navLinklar");
+
+        if (tugma && linklar) {
+            tugma.addEventListener("click", function () {
+                linklar.classList.toggle("ochiq");
+            });
+        }
+
+        var joriyManzil = window.location.pathname;
+        if (linklar) {
+            linklar.querySelectorAll("a").forEach(function (link) {
+                if (link.getAttribute("href") === joriyManzil) {
+                    link.classList.add("aktive");
+                }
+            });
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
